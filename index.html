@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validador de Elegibilidade de Profissionais - APS</title>
+    <!-- Biblioteca SheetJS para processar Excel diretamente no navegador -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0F4C5C; color: #333; margin: 0; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .header img { max-width: 180px; height: auto; border-radius: 50%; }
+        .header h1 { font-size: 24px; color: #023e8a; margin-top: 15px; letter-spacing: 0.5px; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .section { margin-bottom: 25px; padding-bottom: 25px; border-bottom: 1px solid #eee; }
+        .section:last-child { border-bottom: none; }
+        h3 { color: #495057; margin-top: 0; }
+        .btn { padding: 12px 20px; background-color: #0077b6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s; }
+        .btn:hover { background-color: #023e8a; }
+        .btn:disabled { background-color: #cccccc; cursor: not-allowed; }
+        input[type="text"], input[type="file"] { padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; outline: none; }
+        input[type="text"] { width: 350px; transition: 0.2s; }
+        input[type="text"]:focus { border-color: #0077b6; }
+        .search-group { display: flex; gap: 10px; align-items: center; }
+        .status { margin-top: 10px; font-weight: 500; font-size: 15px; }
+        .text-green { color: #2b9348; }
+        .text-red { color: #d90429; }
+        .text-gray { color: #6c757d; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        th, td { border: 1px solid #e9ecef; padding: 10px 12px; text-align: left; }
+        th { background-color: #f8f9fa; color: #495057; font-weight: 600; text-transform: uppercase; font-size: 12px; }
+        tr:nth-child(even) { background-color: #fdfdfd; }
+        tr:hover { background-color: #f1f3f5; }
+        #loading { display: none; margin-top: 10px; color: #e85d04; font-weight: 500; }
+        #resultStatus { font-size: 22px; margin-bottom: 5px; }
+        #resultDetails { margin-top: 0; font-weight: normal; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <!-- A imagem deve estar na mesma pasta com o nome logo.jpeg -->
+        <img src="logo.jpeg" alt="Logo Diretoria de Inteligência de Dados" />
+        <h1>Gerência de Análise e Estatística - DID/SEMSA</h1>
+    </div>
+    
+    <div class="container">
+        <!-- Passo 1: Upload -->
+        <div class="section">
+            <h3>1. Carregar Base Consolidada (.xlsx)</h3>
+            <input type="file" id="fileInput" accept=".xlsx, .xls" />
+            <div id="loading">A ler e processar o ficheiro no seu navegador... Por favor, aguarde.</div>
+            <div id="uploadStatus" class="status text-gray">Nenhum ficheiro carregado.</div>
+        </div>
+
+        <!-- Passo 2: Busca -->
+        <div class="section">
+            <h3>2. Consultar Profissional</h3>
+            <div class="search-group">
+                <input type="text" id="searchInput" placeholder="Digite o nome do profissional" disabled />
+                <button id="btnSearch" class="btn" disabled>Consultar</button>
+            </div>
+        </div>
+
+        <!-- Passo 3: Resultados -->
+        <div class="section">
+            <h2 id="resultStatus"></h2>
+            <h4 id="resultDetails" class="text-red"></h4>
+            
+            <div style="overflow-x: auto;">
+                <table id="resultTable">
+                    <thead>
+                        <tr>
+                            <th>COMPETÊNCIA</th>
+                            <th>DISTRITO</th>
+                            <th>CNES</th>
+                            <th>EAS</th>
+                            <th>DESCRIÇÃO</th>
+                            <th>INE</th>
+                            <th>EQUIPE</th>
+                            <th>DT_ENTRADA</th>
+                            <th>TIPO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Linhas da tabela serão geradas via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let globalData = [];
+        let totalCompetencias = new Set();
+
+        document.getElementById('fileInput').addEventListener('change', handleFile);
+        document.getElementById('btnSearch').addEventListener('click', searchProfessional);
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') searchProfessional();
+        });
+
+        function handleFile(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Reseta a interface
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('uploadStatus').textContent = "";
+            document.getElementById('searchInput').disabled = true;
+            document.getElementById('btnSearch').disabled = true;
+            document.querySelector('#resultTable tbody').innerHTML = "";
+            document.getElementById('resultStatus').textContent = "";
+            document.getElementById('resultDetails').textContent = "";
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const data = new Uint8Array(event.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    globalData = XLSX.utils.sheet_to_json(worksheet, {defval: ""});
+                    
+                    totalCompetencias = new Set();
+                    globalData.forEach(row => {
+                        if(row.CMPT_CNES && String(row.CMPT_CNES).trim() !== "") {
+                            totalCompetencias.add(String(row.CMPT_CNES).trim());
+                        }
+                    });
+
+                    document.getElementById('loading').style.display = 'none';
+                    
+                    if(globalData.length > 0) {
+                        document.getElementById('uploadStatus').textContent = `✅ Base carregada com sucesso! Identificadas ${totalCompetencias.size} competências e ${globalData.length.toLocaleString('pt-BR')} registos.`;
+                        document.getElementById('uploadStatus').className = "status text-green";
+                        document.getElementById('searchInput').disabled = false;
+                        document.getElementById('btnSearch').disabled = false;
+                        document.getElementById('searchInput').focus();
+                    } else {
+                        throw new Error("O ficheiro está vazio.");
+                    }
+                } catch (error) {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('uploadStatus').textContent = "❌ Erro ao ler o ficheiro. Certifique-se de que é a base consolidada correta.";
+                    document.getElementById('uploadStatus').className = "status text-red";
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function searchProfessional() {
+            const input = document.getElementById('searchInput').value.trim().toUpperCase();
+            const statusEl = document.getElementById('resultStatus');
+            const detailsEl = document.getElementById('resultDetails');
+            const tbody = document.querySelector('#resultTable tbody');
+            
+            statusEl.textContent = "";
+            detailsEl.textContent = "";
+            tbody.innerHTML = "";
+
+            if (!input) return;
+
+            // Procura exata ignorando maiúsculas/minúsculas e espaços extras
+            const dfProf = globalData.filter(row => String(row.NOME_PROF || "").trim().toUpperCase() === input);
+
+            if (dfProf.length === 0) {
+                statusEl.textContent = "PROFISSIONAL NÃO ENCONTRADO";
+                statusEl.className = "text-gray";
+                return;
+            }
+
+            // Validação 1: Verificar se é Bolsista em algum momento
+            let eBolsista = false;
+            dfProf.forEach(row => {
+                const tipo = String(row.TIPO || "").toUpperCase();
+                const vinculo = String(row.VINCULO || "").toUpperCase();
+                if (tipo.includes("BOLSISTA") || vinculo.includes("BOLSISTA")) {
+                    eBolsista = true;
+                }
+            });
+
+            // Validação 2: Verificar vínculo à equipe (INE ou EQUIPE preenchidos)
+            let mesesEmEquipe = new Set();
+            dfProf.forEach(row => {
+                const temEquipe = (row.EQUIPE !== undefined && String(row.EQUIPE).trim() !== "") || 
+                                  (row.INE !== undefined && String(row.INE).trim() !== "");
+                if (temEquipe) {
+                    mesesEmEquipe.add(String(row.CMPT_CNES).trim());
+                }
+            });
+
+            const esteveEmTodosOsMeses = (mesesEmEquipe.size === totalCompetencias.size) && totalCompetencias.size > 0;
+
+            // Determinar o Status
+            if (!eBolsista && esteveEmTodosOsMeses) {
+                statusEl.textContent = "ELEGÍVEL PARA PAGAMENTO";
+                statusEl.className = "text-green";
+            } else {
+                let motivos = [];
+                if (eBolsista) motivos.push("O profissional tem vínculo como Bolsista");
+                if (!esteveEmTodosOsMeses) {
+                    motivos.push(`Falta vinculação de Equipe em algumas competências (Possui ${mesesEmEquipe.size} de ${totalCompetencias.size})`);
+                }
+                statusEl.textContent = "NÃO CUMPRE OS CRITÉRIOS";
+                statusEl.className = "text-red";
+                detailsEl.textContent = "Motivo(s): " + motivos.join(" | ");
+            }
+
+            // Ordenar por competência e desenhar a tabela
+            dfProf.sort((a, b) => String(a.CMPT_CNES).localeCompare(String(b.CMPT_CNES)));
+            const colunas = ['CMPT_CNES', 'DISTRITO', 'CNES', 'EAS', 'DESCRICAO', 'INE', 'EQUIPE', 'DT_ENTRADA', 'TIPO'];
+            
+            dfProf.forEach(row => {
+                const tr = document.createElement('tr');
+                colunas.forEach(col => {
+                    const td = document.createElement('td');
+                    td.textContent = (row[col] !== undefined && String(row[col]).trim() !== "") ? row[col] : "-";
+                    tr.appendChild(
