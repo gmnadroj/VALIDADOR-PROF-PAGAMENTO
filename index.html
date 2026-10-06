@@ -216,4 +216,11 @@
                 colunas.forEach(col => {
                     const td = document.createElement('td');
                     td.textContent = (row[col] !== undefined && String(row[col]).trim() !== "") ? row[col] : "-";
-                    tr.appendChild(
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>
