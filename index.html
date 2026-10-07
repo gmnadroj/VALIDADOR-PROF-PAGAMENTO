@@ -38,35 +38,37 @@
 </head>
 <body>
     <div class="header">
-        <!-- A imagem deve estar na mesma pasta com o nome logo.jpeg -->
         <img src="logo.jpeg" alt="Logo Diretoria de Inteligência de Dados" />
         <h1>Gerência de Análise e Estatística - DID/SEMSA</h1>
     </div>
     
     <div class="container">
-        <!-- Passo 1: Upload -->
-        <div class="section">
-            <h3>1. Carregar Base Consolidada (.xlsx)</h3>
-            <input type="file" id="fileInput" accept=".xlsx, .xls" />
-            <div id="loading">A ler e processar o ficheiro no seu navegador... Por favor, aguarde.</div>
-            <div id="uploadStatus" class="status text-gray">Nenhum ficheiro carregado.</div>
-        </div>
+        <!-- Campos 1 e 2 Lado a Lado -->
+        <div class="controls-wrapper">
+            <!-- Passo 1: Upload -->
+            <div class="control-section">
+                <h3>1. Carregar Base Consolidada (.xlsx)</h3>
+                <input type="file" id="fileInput" accept=".xlsx, .xls" />
+                <div id="loading">A ler e processar o ficheiro... Por favor, aguarde.</div>
+                <div id="uploadStatus" class="status text-gray">Nenhum ficheiro carregado.</div>
+            </div>
 
-        <!-- Passo 2: Busca -->
-        <div class="section">
-            <h3>2. Consultar Profissional</h3>
-            <div class="search-group">
-                <input type="text" id="searchInput" placeholder="Digite o nome do profissional" disabled />
-                <button id="btnSearch" class="btn" disabled>Consultar</button>
+            <!-- Passo 2: Busca -->
+            <div class="control-section">
+                <h3>2. Consultar Profissional</h3>
+                <div class="search-group">
+                    <input type="text" id="searchInput" placeholder="Digite o nome do profissional" disabled />
+                    <button id="btnSearch" class="btn" disabled>Consultar</button>
+                </div>
             </div>
         </div>
 
         <!-- Passo 3: Resultados -->
-        <div class="section">
-            <h2 id="resultStatus"></h2>
-            <h4 id="resultDetails" class="text-red"></h4>
+        <div class="results-section">
+            <h2 id="resultStatus" style="margin-top: 0; font-size: 20px;"></h2>
+            <h4 id="resultDetails" class="text-red" style="margin-top: 5px;"></h4>
             
-            <div style="overflow-x: auto;">
+            <div style="overflow-x: auto; margin-top: 20px;">
                 <table id="resultTable">
                     <thead>
                         <tr>
@@ -82,13 +84,13 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Linhas da tabela serão geradas via JavaScript -->
+                        <!-- Linhas geradas via JavaScript -->
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-
+    
     <script>
         let globalData = [];
         let totalCompetencias = new Set();
