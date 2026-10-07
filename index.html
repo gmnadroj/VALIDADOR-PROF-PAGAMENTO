@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Validador de Elegibilidade de Profissionais - APS</title>
+    <title>Profissionais Elegíveis para Pagamento - SEMSA</title>
     <!-- Biblioteca SheetJS para processar Excel diretamente no navegador -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -13,33 +13,39 @@
             background: linear-gradient(to right, #072e50, #034b75); 
             color: #14171a; 
             margin: 0; 
-            padding: 20px; 
+            padding: 20px 20px 100px 20px; /* Espaço extra na base para o rodapé */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-        .header { 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 15px; 
-            margin-bottom: 20px; 
-            color: #ffffff; /* Letra branca para contrastar com o fundo */
-        }
-        .header img { max-width: 80px; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .header h1 { font-size: 22px; margin: 0; font-weight: bold; letter-spacing: 0.5px; }
         
+        /* Título da Ferramenta */
+        .page-title {
+            text-align: center;
+            color: #ffffff;
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Container Principal (Ferramenta) */
         .container { 
             max-width: 1100px; 
             margin: 0 auto; 
-            background: #ffffff; 
-            border-radius: 16px; /* Bordas arredondadas estilo Twitter */
+            background: #f0f8ff; /* Azul bem leve no lugar do fundo branco */
+            border-radius: 16px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            overflow: hidden; /* Mantém tudo dentro do arredondamento */
+            overflow: hidden; 
+            flex-grow: 1; /* Permite que o container ocupe o espaço disponível */
+            width: 100%;
         }
         
         /* Divisão dos campos 1 e 2 lado a lado */
         .controls-wrapper {
             display: flex;
             flex-wrap: wrap;
-            border-bottom: 1px solid #e6ecf0; /* Linha de divisão cinza clara (Twitter) */
+            border-bottom: 1px solid #e6ecf0; 
         }
         .control-section {
             flex: 1;
@@ -56,15 +62,14 @@
             flex: 1;
             padding: 12px 18px; 
             border: 1px solid #ccd6dd; 
-            border-radius: 9999px; /* Formato pílula */
+            border-radius: 9999px; 
             font-size: 14px; 
             outline: none; 
             transition: 0.2s; 
-            background-color: #f5f8fa;
+            background-color: #ffffff;
         }
         input[type="text"]:focus { 
-            border-color: #1da1f2; /* Azul Twitter no foco */
-            background-color: #ffffff; 
+            border-color: #1da1f2; 
         }
         
         /* Estilo do Input de Arquivo */
@@ -82,7 +87,7 @@
         }
         input[type="file"]::file-selector-button:hover { background-color: #e8f5fd; }
         
-        /* Botão Consultar (Estilo Tweet) */
+        /* Botão Consultar */
         .btn { 
             padding: 10px 24px; 
             background-color: #1da1f2; 
@@ -108,15 +113,56 @@
         #loading { display: none; margin-top: 10px; color: #1da1f2; font-size: 14px; font-weight: 500; }
         
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { text-align: left; padding: 12px 10px; border-bottom: 1px solid #e6ecf0; color: #657786; font-size: 12px; }
-        td { padding: 14px 10px; border-bottom: 1px solid #e6ecf0; color: #14171a; }
-        tr:hover { background-color: #f5f8fa; }
+        th { text-align: left; padding: 12px 10px; border-bottom: 1px solid #cbd5e1; color: #475569; font-size: 12px; }
+        td { padding: 14px 10px; border-bottom: 1px solid #e2e8f0; color: #1e293b; }
+        tr:hover { background-color: #e0f2fe; } /* Fundo azul bem clarinho ao passar o rato na tabela */
+
+        /* Rodapé Estilo SEMSA */
+        .footer {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #ffffff;
+            font-size: 12px;
+            width: 100%;
+            max-width: 1100px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .footer-logo {
+            max-height: 50px;
+            width: auto;
+        }
+
+        .footer-center {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .footer-center img {
+            max-height: 40px;
+            margin-bottom: 8px;
+        }
+
+        .footer-right {
+            text-align: right;
+            line-height: 1.6;
+        }
+
+        .footer-right img {
+            max-height: 40px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <img src="logo.jpeg" alt="Logo Diretoria de Inteligência de Dados" />
-        <h1>Gerência de Análise e Estatística - DID/SEMSA</h1>
+    
+    <div class="page-title">
+        Profissionais Elegíveis para Pagamento - SEMSA
     </div>
     
     <div class="container">
@@ -165,6 +211,27 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <!-- Novo Rodapé -->
+    <div class="footer">
+        <div class="footer-left">
+            <img src="logo_pmm_white.png" alt="Prefeitura de Manaus" class="footer-logo">
+        </div>
+        
+        <div class="footer-center">
+            <img src="logo-did.png" alt="DID">
+            <div>Diretoria de Inteligência de Dados</div>
+            <div>Gerência de Análise e Estatística</div>
+            <div>DID © 2026</div>
+        </div>
+
+        <div class="footer-right">
+            <img src="logo-semsa-cabecalho-white.png" alt="SEMSA"><br>
+            Av. Maceió, 160 - Adrianópolis<br>
+            Manaus - AM, 69029-520<br>
+            Telefone: (92) 3214-5072
         </div>
     </div>
     
@@ -305,4 +372,3 @@
     </script>
 </body>
 </html>
-
