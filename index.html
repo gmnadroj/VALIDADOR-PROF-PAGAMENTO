@@ -124,8 +124,10 @@
                     
                     totalCompetencias = new Set();
                     globalData.forEach(row => {
-                        if(row.CMPT_CNES && String(row.CMPT_CNES).trim() !== "") {
-                            totalCompetencias.add(String(row.CMPT_CNES).trim());
+                        let val = String(row.CMPT_CNES).trim();
+                        // Conta apenas se não for vazio, não for o cabeçalho e for um número válido (ex: 202401)
+                        if (val !== "" && val.toUpperCase() !== "CMPT_CNES" && !isNaN(val)) {
+                            totalCompetencias.add(val);
                         }
                     });
 
