@@ -332,7 +332,6 @@
         </div>
         <div class="footer-center">
             <img src="logo-did.png" alt="DID">
-            <div>Diretoria de Inteligência de Dados</div>
             <div>Gerência de Análise e Estatística</div>
             <div>DID © 2026</div>
         </div>
@@ -416,8 +415,8 @@
         }
 
         function searchProfessional() {
-            // Remove pontos e traços que o utilizador possa ter digitado (busca apenas pelos números do CPF)
-            const inputCpfNumeros = document.getElementById('searchInput').value.replace(/\D/g, '');
+            // Remove pontos e traços do input
+            const inputRaw = document.getElementById('searchInput').value.replace(/\D/g, '');
             const printArea = document.getElementById('printArea');
             const tbody = document.querySelector('#resultTable tbody');
             const btnPdf = document.getElementById('btnPdf');
@@ -426,12 +425,16 @@
             btnPdf.style.display = 'none';
             tbody.innerHTML = "";
 
-            if (!inputCpfNumeros) return;
+            if (!inputRaw) return;
 
-            // Filtra os dados comparando apenas os números do CPF_PROF
+            // Converter para número para ignorar os zeros à esquerda perdidos no Excel
+            const inputNum = parseInt(inputRaw, 10);
+
+            // Filtra os dados garantindo que o CPF numérico bate em todas as competências
             const dfProf = globalData.filter(row => {
-                const cpfRow = String(row.CPF_PROF || row.CPF || "").replace(/\D/g, '');
-                return cpfRow === inputCpfNumeros;
+                const cpfExcel = String(row.CPF_PROF || row.CPF || "").replace(/\D/g, '');
+                if (!cpfExcel) return false;
+                return parseInt(cpfExcel, 10) === inputNum;
             });
 
             if (dfProf.length === 0) {
@@ -439,7 +442,6 @@
                 return;
             }
 
-            // O nome agora é extraído do primeiro registo encontrado para alimentar a função de género
             const nomeDoServidor = dfProf[0]['NOME_PROF'] || "Servidor(a) não identificado";
             
             const anoBase = Array.from(totalCompetencias)[0].substring(0, 4);
@@ -448,25 +450,35 @@
             
             document.getElementById('tituloSituacao').textContent = `Situação ${textoServidor} no CNES nas competências de ${anoBase}`;
             
-            // Preenchimento dos cartões informativos
             document.getElementById('lblNome').textContent = nomeDoServidor;
             
-            // Pega o CPF direto da base (mantendo zero à esquerda se houver)
-            document.getElementById('lblCPF').textContent = String(dfProf[0]['CPF_PROF'] || inputCpfNumeros).trim();
+            // Formata o CPF visualmente para a tela e PDF (000.000.000-00)
+            const cpfExibicao = String(inputRaw).padStart(11, '0');
+            const cpfFormatado = cpfExibicao.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+            document.getElementById('lblCPF').textContent = cpfFormatado;
+            
             document.getElementById('lblCBO').textContent = String(dfProf[0]['COD_CBO'] || "-").trim();
 
-            // Lógica para apresentar a Data de Desligamento, se existir
-            const dtDesligamento = dfProf[0]['DT_DESLIGAMENTO'] || dfProf[0]['DATA_DESLIGAMENTO'] || "";
-            const boxDesligamento = document.getElementById('boxDesligamento');
-            
-            if (String(dtDesligamento).trim() !== "") {
-                document.getElementById('lblDesligamento').textContent = dtDesligamento;
-                boxDesligamento.style.display = 'flex'; // Torna a div visível
-            } else {
-                boxDesligamento.style.display = 'none'; // Mantém oculta se não tiver dado
+            // Procura a Data de Desligamento em TODAS as linhas da servidora
+            let dtDesligamento = "";
+            for (let i = 0; i < dfProf.length; i++) {
+                let valDT = dfProf[i]['DT_DESLIGAMENTO'] || dfProf[i]['DATA_DESLIGAMENTO'] || "";
+                if (String(valDT).trim() !== "") {
+                    dtDesligamento = String(valDT).trim();
+                    break;
+                }
             }
 
-            // Ordena a tabela por competência cronológica
+            // Exibe ou oculta a caixa de Desligamento
+            const boxDesligamento = document.getElementById('boxDesligamento');
+            if (dtDesligamento !== "") {
+                document.getElementById('lblDesligamento').textContent = dtDesligamento;
+                boxDesligamento.style.display = 'flex';
+            } else {
+                boxDesligamento.style.display = 'none';
+            }
+
+            // Ordena as competências na tabela cronologicamente
             dfProf.sort((a, b) => String(a.CMPT_CNES).localeCompare(String(b.CMPT_CNES)));
             
             const colunas = ['CMPT_CNES', 'DISTRITO', 'CNES', 'EAS', 'DESCRICAO', 'COD_CBO', 'INE', 'EQUIPE', 'TIPO'];
@@ -484,7 +496,6 @@
             printArea.style.display = 'block';
             btnPdf.style.display = 'inline-block';
         }
-
         document.getElementById('btnPdf').addEventListener('click', function() {
             const element = document.getElementById('printArea');
             const nomeProf = document.getElementById('lblNome').textContent.replace(/\s+/g, '_');
