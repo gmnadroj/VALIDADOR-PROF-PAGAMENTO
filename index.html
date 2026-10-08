@@ -19,14 +19,50 @@
             flex-direction: column;
         }
         
-        /* Título da Ferramenta */
-        .page-title {
-            text-align: center;
+        /* Novo Cabeçalho Profissional */
+        .app-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 25px;
+            margin: 0 auto 30px auto;
+            padding: 20px 35px;
+            background: rgba(255, 255, 255, 0.06); /* Fundo translúcido elegante */
+            border-radius: 16px;
+            max-width: 1100px;
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .app-logo {
+            width: 100px; /* Tamanho exato solicitado */
+            height: auto;
+            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3)); /* Sombra para destacar a logo */
+        }
+        .app-title-group {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-left: 2px solid rgba(255, 255, 255, 0.2); /* Linha divisória fina */
+            padding-left: 25px;
+        }
+        .app-title-group h1 {
             color: #ffffff;
-            font-size: 26px;
-            font-weight: bold;
-            margin-bottom: 25px;
+            font-size: 28px;
+            font-weight: 800;
+            margin: 0 0 6px 0;
             letter-spacing: 0.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .app-title-group h2 {
+            color: #a5d0f5; /* Azul claro para combinar com os botões */
+            font-size: 15px;
+            font-weight: 600;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
         }
 
         /* Container Principal (Ferramenta) */
