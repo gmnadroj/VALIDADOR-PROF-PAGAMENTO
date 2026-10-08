@@ -37,9 +37,11 @@
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
         .app-logo {
-            width: 100px; /* Tamanho exato solicitado */
+            width: 280px; /* Aumentado consideravelmente para logos horizontais */
             height: auto;
-            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3)); /* Sombra para destacar a logo */
+            max-height: 90px; /* Garante que não ultrapassa a altura do quadro */
+            object-fit: contain;
+            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
         }
         .app-title-group {
             display: flex;
