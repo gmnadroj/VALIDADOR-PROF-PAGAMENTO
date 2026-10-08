@@ -418,21 +418,29 @@
             btnPdf.style.display = 'inline-block';
         }
 
-        // Funcionalidade de Baixar em PDF
+        // Funcionalidade de Baixar em PDF corrigida
         document.getElementById('btnPdf').addEventListener('click', function() {
             const element = document.getElementById('printArea');
             const nomeProf = document.getElementById('lblNome').textContent.replace(/\s+/g, '_');
             
+            // Remove momentaneamente o overflow da tabela para que o html2canvas capture o conteúdo total
+            const tableDiv = element.querySelector('div[style*="overflow-x: auto"]');
+            if (tableDiv) tableDiv.style.overflowX = 'visible';
+
             const opt = {
-                margin:       10,
+                margin:       [10, 10, 10, 10], // Margens (topo, direita, base, esquerda)
                 filename:     `Consulta_CNES_${nomeProf}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' } // Landscape para a tabela caber bem
+                html2canvas:  { 
+                    scale: 2, 
+                    scrollY: 0, // Resolve o problema do espaço em branco no topo
+                    useCORS: true 
+                },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' } // Formato retrato (Portrait) restaurado
             };
             
-            html2pdf().set(opt).from(element).save();
+            // Gera o PDF e volta a repor o estilo original da div da tabela
+            html2pdf().set(opt).from(element).save().then(() => {
+                if (tableDiv) tableDiv.style.overflowX = 'auto';
+            });
         });
-    </script>
-</body>
-</html>
