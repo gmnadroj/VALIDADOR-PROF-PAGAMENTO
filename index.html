@@ -4,16 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profissionais Elegíveis para Pagamento - SEMSA</title>
-    <!-- Biblioteca SheetJS para processar Excel diretamente no navegador -->
+    
+    <!-- Biblioteca SheetJS para processar Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Biblioteca Html2Pdf para gerar o ficheiro PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
     <style>
         body { 
-            /* Fonte do Twitter e Fundo inspirado na imagem da SEMSA */
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             background: linear-gradient(to right, #072e50, #034b75); 
             color: #14171a; 
             margin: 0; 
-            padding: 20px 20px 100px 20px; /* Espaço extra na base para o rodapé */
+            padding: 20px 20px 100px 20px; 
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -27,7 +31,7 @@
             gap: 25px;
             margin: 0 auto 30px auto;
             padding: 20px 35px;
-            background: rgba(255, 255, 255, 0.06); /* Fundo translúcido elegante */
+            background: rgba(255, 255, 255, 0.06); 
             border-radius: 16px;
             max-width: 1100px;
             width: 100%;
@@ -37,17 +41,17 @@
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
         .app-logo {
-            width: 280px; /* Aumentado consideravelmente para logos horizontais */
+            width: 280px; 
             height: auto;
-            max-height: 90px; /* Garante que não ultrapassa a altura do quadro */
+            max-height: 90px;
             object-fit: contain;
-            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3)); 
         }
         .app-title-group {
             display: flex;
             flex-direction: column;
             justify-content: center;
-            border-left: 2px solid rgba(255, 255, 255, 0.2); /* Linha divisória fina */
+            border-left: 2px solid rgba(255, 255, 255, 0.2); 
             padding-left: 25px;
         }
         .app-title-group h1 {
@@ -59,7 +63,7 @@
             text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         .app-title-group h2 {
-            color: #a5d0f5; /* Azul claro para combinar com os botões */
+            color: #a5d0f5; 
             font-size: 15px;
             font-weight: 600;
             margin: 0;
@@ -71,46 +75,41 @@
         .container { 
             max-width: 1100px; 
             margin: 0 auto; 
-            background: #f0f8ff; /* Azul bem leve no lugar do fundo branco */
+            background: #f0f8ff; 
             border-radius: 16px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             overflow: hidden; 
-            flex-grow: 1; /* Permite que o container ocupe o espaço disponível */
+            flex-grow: 1; 
             width: 100%;
         }
         
-        /* Divisão dos campos 1 e 2 lado a lado */
         .controls-wrapper {
             display: flex;
             flex-wrap: wrap;
-            border-bottom: 1px solid #e6ecf0; 
+            border-bottom: 1px solid #cbd5e1; 
         }
         .control-section {
             flex: 1;
             min-width: 320px;
             padding: 25px;
-            border-right: 1px solid #e6ecf0;
+            border-right: 1px solid #cbd5e1;
         }
         .control-section:last-child { border-right: none; }
         
         h3 { font-size: 16px; font-weight: bold; margin-top: 0; color: #14171a; }
         
-        /* Estilo dos campos de texto (Arredondados) */
         input[type="text"] { 
             flex: 1;
             padding: 12px 18px; 
-            border: 1px solid #ccd6dd; 
+            border: 1px solid #94a3b8; 
             border-radius: 9999px; 
             font-size: 14px; 
             outline: none; 
             transition: 0.2s; 
             background-color: #ffffff;
         }
-        input[type="text"]:focus { 
-            border-color: #1da1f2; 
-        }
+        input[type="text"]:focus { border-color: #1da1f2; }
         
-        /* Estilo do Input de Arquivo */
         input[type="file"] { font-size: 14px; color: #657786; width: 100%; margin-bottom: 5px; }
         input[type="file"]::file-selector-button {
             padding: 8px 16px;
@@ -125,7 +124,7 @@
         }
         input[type="file"]::file-selector-button:hover { background-color: #e8f5fd; }
         
-        /* Botão Consultar */
+        /* Botões */
         .btn { 
             padding: 10px 24px; 
             background-color: #1da1f2; 
@@ -139,6 +138,9 @@
         }
         .btn:hover:not(:disabled) { background-color: #1a91da; }
         .btn:disabled { background-color: #a5d0f5; cursor: not-allowed; opacity: 0.7; }
+
+        .btn-success { background-color: #10b981; margin-top: 15px; font-size: 16px; }
+        .btn-success:hover:not(:disabled) { background-color: #059669; }
         
         .search-group { display: flex; gap: 10px; margin-top: 15px; }
         .status { font-size: 13px; margin-top: 10px; font-weight: 500; }
@@ -150,10 +152,26 @@
         .results-section { padding: 25px; min-height: 200px; }
         #loading { display: none; margin-top: 10px; color: #1da1f2; font-size: 14px; font-weight: 500; }
         
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { text-align: left; padding: 12px 10px; border-bottom: 1px solid #cbd5e1; color: #475569; font-size: 12px; }
-        td { padding: 14px 10px; border-bottom: 1px solid #e2e8f0; color: #1e293b; }
-        tr:hover { background-color: #e0f2fe; } /* Fundo azul bem clarinho ao passar o rato na tabela */
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { text-align: left; padding: 12px 10px; border-bottom: 2px solid #94a3b8; color: #334155; font-size: 11px; text-transform: uppercase; }
+        td { padding: 12px 10px; border-bottom: 1px solid #cbd5e1; color: #0f172a; }
+        tr:hover { background-color: #e0f2fe; } 
+
+        /* Bloco com Dados do Servidor */
+        .info-card {
+            display: flex; 
+            flex-wrap: wrap;
+            gap: 30px; 
+            background: #ffffff; 
+            padding: 18px 25px; 
+            border-radius: 8px; 
+            border: 1px solid #cbd5e1;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .info-item { display: flex; flex-direction: column; }
+        .info-label { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: bold; margin-bottom: 4px; }
+        .info-value { font-size: 15px; color: #0f172a; font-weight: 600; }
 
         /* Rodapé Estilo SEMSA */
         .footer {
@@ -168,50 +186,26 @@
             margin-left: auto;
             margin-right: auto;
         }
-
-        .footer-logo {
-            max-height: 50px;
-            width: auto;
-        }
-
-        .footer-center {
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .footer-center img {
-            max-height: 40px;
-            margin-bottom: 8px;
-        }
-
-        .footer-right {
-            text-align: right;
-            line-height: 1.6;
-        }
-
-        .footer-right img {
-            max-height: 40px;
-            margin-bottom: 10px;
-        }
+        .footer-logo { max-height: 50px; width: auto; }
+        .footer-center { text-align: center; display: flex; flex-direction: column; align-items: center; }
+        .footer-center img { max-height: 40px; margin-bottom: 8px; }
+        .footer-right { text-align: right; line-height: 1.6; }
+        .footer-right img { max-height: 40px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
     
-    <!-- Novo Cabeçalho -->
+    <!-- Cabeçalho (Glassmorphism) -->
     <div class="app-header">
         <img src="logo-did.png" alt="Diretoria de Inteligência de Dados" class="app-logo">
         <div class="app-title-group">
             <h1>Profissionais Elegíveis para Pagamento</h1>
-            <h2>Gerência de Análise e Estatística - DID/SEMSA</h2>
+            <h2>Secretaria Municipal de Saúde - SEMSA</h2>
         </div>
     </div>
     
     <div class="container">
-        <!-- Campos 1 e 2 Lado a Lado -->
         <div class="controls-wrapper">
-            <!-- Passo 1: Upload -->
             <div class="control-section">
                 <h3>1. Carregar Base Consolidada (.xlsx)</h3>
                 <input type="file" id="fileInput" accept=".xlsx, .xls" />
@@ -219,7 +213,6 @@
                 <div id="uploadStatus" class="status text-gray">Nenhum ficheiro carregado.</div>
             </div>
 
-            <!-- Passo 2: Busca -->
             <div class="control-section">
                 <h3>2. Consultar Profissional</h3>
                 <div class="search-group">
@@ -229,47 +222,72 @@
             </div>
         </div>
 
-        <!-- Passo 3: Resultados -->
         <div class="results-section">
-            <h2 id="resultStatus" style="margin-top: 0; font-size: 20px;"></h2>
-            <h4 id="resultDetails" class="text-red" style="margin-top: 5px;"></h4>
-            
-            <div style="overflow-x: auto; margin-top: 20px;">
-                <table id="resultTable">
-                    <thead>
-                        <tr>
-                            <th>COMPETÊNCIA</th>
-                            <th>DISTRITO</th>
-                            <th>CNES</th>
-                            <th>EAS</th>
-                            <th>DESCRIÇÃO</th>
-                            <th>INE</th>
-                            <th>EQUIPE</th>
-                            <th>DT_ENTRADA</th>
-                            <th>TIPO</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Linhas geradas via JavaScript -->
-                    </tbody>
-                </table>
+            <!-- Área que será impressa no PDF -->
+            <div id="printArea" style="display: none;">
+                
+                <h2 id="tituloSituacao" style="margin-top: 0; margin-bottom: 25px; font-size: 22px; color: #034b75; text-align: center;"></h2>
+                
+                <!-- Dados do Servidor -->
+                <div class="info-card">
+                    <div class="info-item">
+                        <span class="info-label">Nome Completo</span>
+                        <span class="info-value" id="lblNome"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">CPF</span>
+                        <span class="info-value" id="lblCPF"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">CBO</span>
+                        <span class="info-value" id="lblCBO"></span>
+                    </div>
+                </div>
+                
+                <div style="overflow-x: auto;">
+                    <table id="resultTable">
+                        <thead>
+                            <tr>
+                                <th>COMPETÊNCIA</th>
+                                <th>DISTRITO</th>
+                                <th>CNES</th>
+                                <th>EAS</th>
+                                <th>CARGO</th>
+                                <th>CBO</th> <!-- CBO adicionado aqui ao lado do Cargo -->
+                                <th>INE</th>
+                                <th>EQUIPE</th>
+                                <th>TIPO</th>
+                                <!-- DT_ENTRADA removida -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Linhas geradas via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
+
+            <!-- Botão de Download PDF -->
+            <div style="text-align: center;">
+                <button id="btnPdf" class="btn btn-success" style="display: none;">
+                    ⬇ Baixar Espelho em PDF
+                </button>
+            </div>
+            
         </div>
     </div>
 
-    <!-- Novo Rodapé -->
+    <!-- Rodapé -->
     <div class="footer">
         <div class="footer-left">
             <img src="logo_pmm_white.png" alt="Prefeitura de Manaus" class="footer-logo">
         </div>
-        
         <div class="footer-center">
             <img src="logo-did.png" alt="DID">
             <div>Diretoria de Inteligência de Dados</div>
             <div>Gerência de Análise e Estatística</div>
             <div>DID © 2026</div>
         </div>
-
         <div class="footer-right">
             <img src="logo-semsa-cabecalho-white.png" alt="SEMSA"><br>
             Av. Maceió, 160 - Adrianópolis<br>
@@ -288,18 +306,28 @@
             if (e.key === 'Enter') searchProfessional();
         });
 
+        // Função que identifica se é "do servidor" ou "da servidora" pelo primeiro nome
+        function getGenero(nome) {
+            const primeiroNome = nome.trim().split(' ')[0].toUpperCase();
+            const finaisFemininos = ['A', 'Z'];
+            const nomesFemininosComuns = ['ELIANE', 'ALINE', 'SIMONE', 'MICHELE', 'RAQUEL', 'ESTER', 'RUTH', 'CARMEM', 'CARMEN', 'MIRIAN', 'SUELEN', 'KAREN', 'IVONE', 'CLEIDE', 'LILIAN', 'IRIS', 'EVELIN', 'EVELYN', 'FRANCINE'];
+            
+            if (finaisFemininos.some(letra => primeiroNome.endsWith(letra)) || nomesFemininosComuns.includes(primeiroNome)) {
+                return 'F'; // Feminino
+            }
+            return 'M'; // Masculino
+        }
+
         function handleFile(e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            // Reseta a interface
             document.getElementById('loading').style.display = 'block';
             document.getElementById('uploadStatus').textContent = "";
             document.getElementById('searchInput').disabled = true;
             document.getElementById('btnSearch').disabled = true;
-            document.querySelector('#resultTable tbody').innerHTML = "";
-            document.getElementById('resultStatus').textContent = "";
-            document.getElementById('resultDetails').textContent = "";
+            document.getElementById('printArea').style.display = 'none';
+            document.getElementById('btnPdf').style.display = 'none';
 
             const reader = new FileReader();
             reader.onload = function(event) {
@@ -314,7 +342,6 @@
                     totalCompetencias = new Set();
                     globalData.forEach(row => {
                         let val = String(row.CMPT_CNES).trim();
-                        // Conta apenas se não for vazio, não for o cabeçalho e for um número válido (ex: 202401)
                         if (val !== "" && val.toUpperCase() !== "CMPT_CNES" && !isNaN(val)) {
                             totalCompetencias.add(val);
                         }
@@ -333,7 +360,7 @@
                     }
                 } catch (error) {
                     document.getElementById('loading').style.display = 'none';
-                    document.getElementById('uploadStatus').textContent = "❌ Erro ao ler o ficheiro. Certifique-se de que é a base consolidada correta.";
+                    document.getElementById('uploadStatus').textContent = "❌ Erro ao ler o ficheiro.";
                     document.getElementById('uploadStatus').className = "status text-red";
                 }
             };
@@ -342,65 +369,40 @@
 
         function searchProfessional() {
             const input = document.getElementById('searchInput').value.trim().toUpperCase();
-            const statusEl = document.getElementById('resultStatus');
-            const detailsEl = document.getElementById('resultDetails');
+            const printArea = document.getElementById('printArea');
             const tbody = document.querySelector('#resultTable tbody');
+            const btnPdf = document.getElementById('btnPdf');
             
-            statusEl.textContent = "";
-            detailsEl.textContent = "";
+            printArea.style.display = 'none';
+            btnPdf.style.display = 'none';
             tbody.innerHTML = "";
 
             if (!input) return;
 
-            // Procura exata ignorando maiúsculas/minúsculas e espaços extras
             const dfProf = globalData.filter(row => String(row.NOME_PROF || "").trim().toUpperCase() === input);
 
             if (dfProf.length === 0) {
-                statusEl.textContent = "PROFISSIONAL NÃO ENCONTRADO";
-                statusEl.className = "text-gray";
+                alert("Profissional não encontrado na base de dados carregada.");
                 return;
             }
 
-            // Validação 1: Verificar se é Bolsista em algum momento
-            let eBolsista = false;
-            dfProf.forEach(row => {
-                const tipo = String(row.TIPO || "").toUpperCase();
-                const vinculo = String(row.VINCULO || "").toUpperCase();
-                if (tipo.includes("BOLSISTA") || vinculo.includes("BOLSISTA")) {
-                    eBolsista = true;
-                }
-            });
+            // Descobrir o Ano e Gênero
+            const anoBase = Array.from(totalCompetencias)[0].substring(0, 4);
+            const genero = getGenero(input);
+            const textoServidor = genero === 'F' ? "da servidora" : "do servidor";
+            
+            // Título Dinâmico
+            document.getElementById('tituloSituacao').textContent = `Situação ${textoServidor} no CNES nas competências de ${anoBase}`;
+            
+            // Dados (Pega da primeira linha encontrada)
+            document.getElementById('lblNome').textContent = dfProf[0]['NOME_PROF'] || "-";
+            document.getElementById('lblCPF').textContent = String(dfProf[0]['CPF_PROF'] || "-").trim();
+            document.getElementById('lblCBO').textContent = String(dfProf[0]['COD_CBO'] || "-").trim();
 
-            // Validação 2: Verificar vínculo à equipe (INE ou EQUIPE preenchidos)
-            let mesesEmEquipe = new Set();
-            dfProf.forEach(row => {
-                const temEquipe = (row.EQUIPE !== undefined && String(row.EQUIPE).trim() !== "") || 
-                                  (row.INE !== undefined && String(row.INE).trim() !== "");
-                if (temEquipe) {
-                    mesesEmEquipe.add(String(row.CMPT_CNES).trim());
-                }
-            });
-
-            const esteveEmTodosOsMeses = (mesesEmEquipe.size === totalCompetencias.size) && totalCompetencias.size > 0;
-
-            // Determinar o Status
-            if (!eBolsista && esteveEmTodosOsMeses) {
-                statusEl.textContent = "ELEGÍVEL PARA PAGAMENTO";
-                statusEl.className = "text-green";
-            } else {
-                let motivos = [];
-                if (eBolsista) motivos.push("O profissional tem vínculo como Bolsista");
-                if (!esteveEmTodosOsMeses) {
-                    motivos.push(`Falta vinculação de Equipe em algumas competências (Possui ${mesesEmEquipe.size} de ${totalCompetencias.size})`);
-                }
-                statusEl.textContent = "NÃO CUMPRE OS CRITÉRIOS";
-                statusEl.className = "text-red";
-                detailsEl.textContent = "Motivo(s): " + motivos.join(" | ");
-            }
-
-            // Ordenar por competência e desenhar a tabela
             dfProf.sort((a, b) => String(a.CMPT_CNES).localeCompare(String(b.CMPT_CNES)));
-            const colunas = ['CMPT_CNES', 'DISTRITO', 'CNES', 'EAS', 'DESCRICAO', 'INE', 'EQUIPE', 'DT_ENTRADA', 'TIPO'];
+            
+            // Novas Colunas solicitadas (CBO inserido, DT_ENTRADA removido)
+            const colunas = ['CMPT_CNES', 'DISTRITO', 'CNES', 'EAS', 'DESCRICAO', 'COD_CBO', 'INE', 'EQUIPE', 'TIPO'];
             
             dfProf.forEach(row => {
                 const tr = document.createElement('tr');
@@ -411,7 +413,26 @@
                 });
                 tbody.appendChild(tr);
             });
+            
+            printArea.style.display = 'block';
+            btnPdf.style.display = 'inline-block';
         }
+
+        // Funcionalidade de Baixar em PDF
+        document.getElementById('btnPdf').addEventListener('click', function() {
+            const element = document.getElementById('printArea');
+            const nomeProf = document.getElementById('lblNome').textContent.replace(/\s+/g, '_');
+            
+            const opt = {
+                margin:       10,
+                filename:     `Consulta_CNES_${nomeProf}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' } // Landscape para a tabela caber bem
+            };
+            
+            html2pdf().set(opt).from(element).save();
+        });
     </script>
 </body>
 </html>
