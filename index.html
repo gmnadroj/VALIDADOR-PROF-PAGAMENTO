@@ -354,6 +354,7 @@
             if (e.key === 'Enter') searchProfessional();
         });
 
+        // Função que identifica se é "do servidor" ou "da servidora"
         function getGenero(nome) {
             const primeiroNome = nome.trim().split(' ')[0].toUpperCase();
             const finaisFemininos = ['A', 'Z'];
@@ -363,6 +364,29 @@
                 return 'F'; 
             }
             return 'M'; 
+        }
+
+        // Função para converter o "Número Serial" do Excel em Data legível (DD/MM/AAAA)
+        function formatExcelDate(excelDate) {
+            if (!excelDate) return "";
+            // Se já estiver formatado com barra, devolve como está
+            if (typeof excelDate === "string" && excelDate.includes("/")) return String(excelDate).trim();
+            
+            let num = parseFloat(excelDate);
+            if (!isNaN(num)) {
+                // 25569 é a diferença de dias entre a data base do Excel (1900) e do JavaScript (1970)
+                let utc_days = Math.floor(num - 25569);
+                let date_info = new Date(utc_days * 86400 * 1000);
+                
+                // Ajuste de fuso horário para evitar cair no dia anterior
+                let dataLocal = new Date(date_info.getTime() + (date_info.getTimezoneOffset() * 60000));
+                
+                let dia = String(dataLocal.getDate()).padStart(2, '0');
+                let mes = String(dataLocal.getMonth() + 1).padStart(2, '0');
+                let ano = dataLocal.getFullYear();
+                return `${dia}/${mes}/${ano}`;
+            }
+            return excelDate;
         }
 
         function handleFile(e) {
@@ -415,7 +439,6 @@
         }
 
         function searchProfessional() {
-            // Remove pontos e traços do input
             const inputRaw = document.getElementById('searchInput').value.replace(/\D/g, '');
             const printArea = document.getElementById('printArea');
             const tbody = document.querySelector('#resultTable tbody');
@@ -427,10 +450,8 @@
 
             if (!inputRaw) return;
 
-            // Converter para número para ignorar os zeros à esquerda perdidos no Excel
             const inputNum = parseInt(inputRaw, 10);
 
-            // Filtra os dados garantindo que o CPF numérico bate em todas as competências
             const dfProf = globalData.filter(row => {
                 const cpfExcel = String(row.CPF_PROF || row.CPF || "").replace(/\D/g, '');
                 if (!cpfExcel) return false;
@@ -443,33 +464,29 @@
             }
 
             const nomeDoServidor = dfProf[0]['NOME_PROF'] || "Servidor(a) não identificado";
-            
             const anoBase = Array.from(totalCompetencias)[0].substring(0, 4);
             const genero = getGenero(nomeDoServidor);
             const textoServidor = genero === 'F' ? "da servidora" : "do servidor";
             
             document.getElementById('tituloSituacao').textContent = `Situação ${textoServidor} no CNES nas competências de ${anoBase}`;
-            
             document.getElementById('lblNome').textContent = nomeDoServidor;
             
-            // Formata o CPF visualmente para a tela e PDF (000.000.000-00)
             const cpfExibicao = String(inputRaw).padStart(11, '0');
             const cpfFormatado = cpfExibicao.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
             document.getElementById('lblCPF').textContent = cpfFormatado;
             
             document.getElementById('lblCBO').textContent = String(dfProf[0]['COD_CBO'] || "-").trim();
 
-            // Procura a Data de Desligamento em TODAS as linhas da servidora
+            // Captura e formata a Data de Desligamento
             let dtDesligamento = "";
             for (let i = 0; i < dfProf.length; i++) {
                 let valDT = dfProf[i]['DT_DESLIGAMENTO'] || dfProf[i]['DATA_DESLIGAMENTO'] || "";
                 if (String(valDT).trim() !== "") {
-                    dtDesligamento = String(valDT).trim();
+                    dtDesligamento = formatExcelDate(valDT);
                     break;
                 }
             }
 
-            // Exibe ou oculta a caixa de Desligamento
             const boxDesligamento = document.getElementById('boxDesligamento');
             if (dtDesligamento !== "") {
                 document.getElementById('lblDesligamento').textContent = dtDesligamento;
@@ -478,7 +495,6 @@
                 boxDesligamento.style.display = 'none';
             }
 
-            // Ordena as competências na tabela cronologicamente
             dfProf.sort((a, b) => String(a.CMPT_CNES).localeCompare(String(b.CMPT_CNES)));
             
             const colunas = ['CMPT_CNES', 'DISTRITO', 'CNES', 'EAS', 'DESCRICAO', 'COD_CBO', 'INE', 'EQUIPE', 'TIPO'];
@@ -496,6 +512,7 @@
             printArea.style.display = 'block';
             btnPdf.style.display = 'inline-block';
         }
+
         document.getElementById('btnPdf').addEventListener('click', function() {
             const element = document.getElementById('printArea');
             const nomeProf = document.getElementById('lblNome').textContent.replace(/\s+/g, '_');
