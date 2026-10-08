@@ -224,7 +224,7 @@
 
         <div class="results-section">
             <!-- Área que será impressa no PDF -->
-            <div id="printArea" style="display: none;">
+            <div id="printArea" style="display: none; padding: 20px; background: #fff;">
                 
                 <h2 id="tituloSituacao" style="margin-top: 0; margin-bottom: 25px; font-size: 22px; color: #034b75; text-align: center;"></h2>
                 
@@ -244,8 +244,9 @@
                     </div>
                 </div>
                 
-                <div style="overflow-x: auto;">
-                    <table id="resultTable">
+                <!-- Removemos o overflow-x momentaneamente para o PDF funcionar -->
+                <div id="tableContainer" style="overflow-x: auto; width: 100%;">
+                    <table id="resultTable" style="width: 100%;">
                         <thead>
                             <tr>
                                 <th>COMPETÊNCIA</th>
@@ -253,11 +254,10 @@
                                 <th>CNES</th>
                                 <th>EAS</th>
                                 <th>CARGO</th>
-                                <th>CBO</th> <!-- CBO adicionado aqui ao lado do Cargo -->
+                                <th>CBO</th>
                                 <th>INE</th>
                                 <th>EQUIPE</th>
                                 <th>TIPO</th>
-                                <!-- DT_ENTRADA removida -->
                             </tr>
                         </thead>
                         <tbody>
@@ -306,16 +306,16 @@
             if (e.key === 'Enter') searchProfessional();
         });
 
-        // Função que identifica se é "do servidor" ou "da servidora" pelo primeiro nome
+        // Função que identifica se é "do servidor" ou "da servidora"
         function getGenero(nome) {
             const primeiroNome = nome.trim().split(' ')[0].toUpperCase();
             const finaisFemininos = ['A', 'Z'];
             const nomesFemininosComuns = ['ELIANE', 'ALINE', 'SIMONE', 'MICHELE', 'RAQUEL', 'ESTER', 'RUTH', 'CARMEM', 'CARMEN', 'MIRIAN', 'SUELEN', 'KAREN', 'IVONE', 'CLEIDE', 'LILIAN', 'IRIS', 'EVELIN', 'EVELYN', 'FRANCINE'];
             
             if (finaisFemininos.some(letra => primeiroNome.endsWith(letra)) || nomesFemininosComuns.includes(primeiroNome)) {
-                return 'F'; // Feminino
+                return 'F'; 
             }
-            return 'M'; // Masculino
+            return 'M'; 
         }
 
         function handleFile(e) {
@@ -391,17 +391,14 @@
             const genero = getGenero(input);
             const textoServidor = genero === 'F' ? "da servidora" : "do servidor";
             
-            // Título Dinâmico
             document.getElementById('tituloSituacao').textContent = `Situação ${textoServidor} no CNES nas competências de ${anoBase}`;
             
-            // Dados (Pega da primeira linha encontrada)
             document.getElementById('lblNome').textContent = dfProf[0]['NOME_PROF'] || "-";
             document.getElementById('lblCPF').textContent = String(dfProf[0]['CPF_PROF'] || "-").trim();
             document.getElementById('lblCBO').textContent = String(dfProf[0]['COD_CBO'] || "-").trim();
 
             dfProf.sort((a, b) => String(a.CMPT_CNES).localeCompare(String(b.CMPT_CNES)));
             
-            // Novas Colunas solicitadas (CBO inserido, DT_ENTRADA removido)
             const colunas = ['CMPT_CNES', 'DISTRITO', 'CNES', 'EAS', 'DESCRICAO', 'COD_CBO', 'INE', 'EQUIPE', 'TIPO'];
             
             dfProf.forEach(row => {
@@ -418,29 +415,32 @@
             btnPdf.style.display = 'inline-block';
         }
 
-        // Funcionalidade de Baixar em PDF corrigida
+        // Funcionalidade de Baixar em PDF otimizada
         document.getElementById('btnPdf').addEventListener('click', function() {
             const element = document.getElementById('printArea');
             const nomeProf = document.getElementById('lblNome').textContent.replace(/\s+/g, '_');
+            const tableDiv = document.getElementById('tableContainer');
             
-            // Remove momentaneamente o overflow da tabela para que o html2canvas capture o conteúdo total
-            const tableDiv = element.querySelector('div[style*="overflow-x: auto"]');
+            // Remove momentaneamente o overflow da tabela para que o html2canvas capture tudo
             if (tableDiv) tableDiv.style.overflowX = 'visible';
-
+            
             const opt = {
-                margin:       [10, 10, 10, 10], // Margens (topo, direita, base, esquerda)
+                margin:       [10, 10, 10, 10], 
                 filename:     `Consulta_CNES_${nomeProf}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { 
                     scale: 2, 
-                    scrollY: 0, // Resolve o problema do espaço em branco no topo
+                    scrollY: 0, 
+                    windowWidth: document.documentElement.offsetWidth, // Ajuda na captura
                     useCORS: true 
                 },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' } // Formato retrato (Portrait) restaurado
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' } 
             };
             
-            // Gera o PDF e volta a repor o estilo original da div da tabela
             html2pdf().set(opt).from(element).save().then(() => {
-                if (tableDiv) tableDiv.style.overflowX = 'auto';
+                if (tableDiv) tableDiv.style.overflowX = 'auto'; // Repõe o estilo após gerar
             });
         });
+    </script>
+</body>
+</html>
