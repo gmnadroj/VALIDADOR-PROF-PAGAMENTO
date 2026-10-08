@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Servidores aptos ao PVD - SEMSA</title>
+    <title>CONSULTA SERVIDOR PVD - SEMSA</title>
     
     <!-- Biblioteca SheetJS para processar Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -23,7 +23,7 @@
             flex-direction: column;
         }
         
-        /* Novo Cabeçalho Profissional */
+        /* Cabeçalho Profissional */
         .app-header {
             display: flex;
             align-items: center;
@@ -61,6 +61,7 @@
             margin: 0 0 6px 0;
             letter-spacing: 0.5px;
             text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            text-transform: uppercase;
         }
         .app-title-group h2 {
             color: #a5d0f5; 
@@ -71,7 +72,7 @@
             letter-spacing: 1.5px;
         }
 
-        /* Container Principal (Ferramenta) */
+        /* Container Principal */
         .container { 
             max-width: 1100px; 
             margin: 0 auto; 
@@ -93,6 +94,7 @@
             min-width: 320px;
             padding: 25px;
             border-right: 1px solid #cbd5e1;
+            box-sizing: border-box;
         }
         .control-section:last-child { border-right: none; }
         
@@ -107,6 +109,7 @@
             outline: none; 
             transition: 0.2s; 
             background-color: #ffffff;
+            box-sizing: border-box;
         }
         input[type="text"]:focus { border-color: #1da1f2; }
         
@@ -154,7 +157,7 @@
         
         table { width: 100%; border-collapse: collapse; font-size: 12px; }
         th { text-align: left; padding: 12px 10px; border-bottom: 2px solid #94a3b8; color: #334155; font-size: 11px; text-transform: uppercase; }
-        td { padding: 12px 10px; border-bottom: 1px solid #cbd5e1; color: #0f172a; }
+        td { padding: 12px 10px; border-bottom: 1px solid #cbd5e1; color: #0f172a; white-space: nowrap; }
         tr:hover { background-color: #e0f2fe; } 
 
         /* Bloco com Dados do Servidor */
@@ -172,8 +175,9 @@
         .info-item { display: flex; flex-direction: column; }
         .info-label { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: bold; margin-bottom: 4px; }
         .info-value { font-size: 15px; color: #0f172a; font-weight: 600; }
+        .text-danger { color: #e0245e !important; }
 
-        /* Rodapé Estilo SEMSA */
+        /* Rodapé */
         .footer {
             margin-top: 40px;
             display: flex;
@@ -191,17 +195,59 @@
         .footer-center img { max-height: 40px; margin-bottom: 8px; }
         .footer-right { text-align: right; line-height: 1.6; }
         .footer-right img { max-height: 40px; margin-bottom: 10px; }
+
+        /* =========================================
+           RESPONSIVIDADE (Celulares e Tablets)
+           ========================================= */
+        @media (max-width: 768px) {
+            body { padding: 10px 10px 40px 10px; }
+            
+            .app-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+                padding: 20px 15px;
+            }
+            .app-logo { max-width: 200px; }
+            .app-title-group {
+                border-left: none;
+                border-top: 1px solid rgba(255, 255, 255, 0.2);
+                padding-left: 0;
+                padding-top: 15px;
+            }
+            .app-title-group h1 { font-size: 22px; }
+            .app-title-group h2 { font-size: 12px; }
+            
+            .controls-wrapper { flex-direction: column; }
+            .control-section {
+                border-right: none;
+                border-bottom: 1px solid #cbd5e1;
+                min-width: 100%;
+            }
+            .control-section:last-child { border-bottom: none; }
+            
+            .search-group { flex-direction: column; align-items: stretch; }
+            .search-group input[type="text"] { width: 100%; }
+            .search-group .btn { width: 100%; }
+            
+            .info-card { flex-direction: column; gap: 15px; }
+            
+            .footer {
+                flex-direction: column;
+                gap: 30px;
+            }
+            .footer-left, .footer-center, .footer-right { text-align: center; }
+        }
     </style>
 </head>
 <body>
     
-    <!-- Cabeçalho (Glassmorphism) -->
     <div class="app-header">
         <img src="logo-did.png" alt="Diretoria de Inteligência de Dados" class="app-logo">
         <div class="app-title-group">
-        <h1>Servidores aptos ao PVD</h1>
-        <h2>Secretaria Municipal de Saúde - SEMSA</h2>
-    </div>
+            <h1>CONSULTA SERVIDOR PVD</h1>
+            <h2>Secretaria Municipal de Saúde - SEMSA</h2>
+        </div>
     </div>
     
     <div class="container">
@@ -214,26 +260,26 @@
             </div>
 
             <div class="control-section">
-                <h3>2. Consultar Profissional</h3>
+                <h3>2. Consultar Profissional (CPF)</h3>
                 <div class="search-group">
-                    <input type="text" id="searchInput" placeholder="Digite o nome do profissional" disabled />
+                    <!-- Placeholder alterado para instruir o uso do CPF -->
+                    <input type="text" id="searchInput" placeholder="Digite o CPF do profissional" disabled />
                     <button id="btnSearch" class="btn" disabled>Consultar</button>
                 </div>
             </div>
         </div>
 
         <div class="results-section">
-            <!-- Área que será impressa no PDF -->
             <div id="printArea" style="display: none; padding: 20px; background: #fff;">
                 
                 <h2 id="tituloSituacao" style="margin-top: 0; margin-bottom: 25px; font-size: 22px; color: #034b75; text-align: center;"></h2>
                 
-                <!-- Dados do Servidor -->
                 <div class="info-card">
                     <div class="info-item">
                         <span class="info-label">Nome Completo</span>
                         <span class="info-value" id="lblNome"></span>
                     </div>
+                    <!-- Mantive o CPF visível pois é útil para validar de quem é a consulta -->
                     <div class="info-item">
                         <span class="info-label">CPF</span>
                         <span class="info-value" id="lblCPF"></span>
@@ -242,9 +288,13 @@
                         <span class="info-label">CBO</span>
                         <span class="info-value" id="lblCBO"></span>
                     </div>
+                    <!-- Novo campo de Desligamento oculto por padrão -->
+                    <div class="info-item" id="boxDesligamento" style="display: none;">
+                        <span class="info-label">Data de Desligamento</span>
+                        <span class="info-value text-danger" id="lblDesligamento"></span>
+                    </div>
                 </div>
                 
-                <!-- Removemos o overflow-x momentaneamente para o PDF funcionar -->
                 <div id="tableContainer" style="overflow-x: auto; width: 100%;">
                     <table id="resultTable" style="width: 100%;">
                         <thead>
@@ -267,7 +317,6 @@
                 </div>
             </div>
 
-            <!-- Botão de Download PDF -->
             <div style="text-align: center;">
                 <button id="btnPdf" class="btn btn-success" style="display: none;">
                     ⬇ Baixar Espelho em PDF
@@ -277,7 +326,6 @@
         </div>
     </div>
 
-    <!-- Rodapé -->
     <div class="footer">
         <div class="footer-left">
             <img src="logo_pmm_white.png" alt="Prefeitura de Manaus" class="footer-logo">
@@ -300,16 +348,13 @@
         let globalData = [];
         let totalCompetencias = new Set();
 
-        // Limpa o ficheiro guardado na memória do navegador ao atualizar a página
         document.getElementById('fileInput').value = "";
-
         document.getElementById('fileInput').addEventListener('change', handleFile);
         document.getElementById('btnSearch').addEventListener('click', searchProfessional);
         document.getElementById('searchInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') searchProfessional();
         });
 
-        // Função que identifica se é "do servidor" ou "da servidora"
         function getGenero(nome) {
             const primeiroNome = nome.trim().split(' ')[0].toUpperCase();
             const finaisFemininos = ['A', 'Z'];
@@ -371,7 +416,8 @@
         }
 
         function searchProfessional() {
-            const input = document.getElementById('searchInput').value.trim().toUpperCase();
+            // Remove pontos e traços que o utilizador possa ter digitado (busca apenas pelos números do CPF)
+            const inputCpfNumeros = document.getElementById('searchInput').value.replace(/\D/g, '');
             const printArea = document.getElementById('printArea');
             const tbody = document.querySelector('#resultTable tbody');
             const btnPdf = document.getElementById('btnPdf');
@@ -380,26 +426,47 @@
             btnPdf.style.display = 'none';
             tbody.innerHTML = "";
 
-            if (!input) return;
+            if (!inputCpfNumeros) return;
 
-            const dfProf = globalData.filter(row => String(row.NOME_PROF || "").trim().toUpperCase() === input);
+            // Filtra os dados comparando apenas os números do CPF_PROF
+            const dfProf = globalData.filter(row => {
+                const cpfRow = String(row.CPF_PROF || row.CPF || "").replace(/\D/g, '');
+                return cpfRow === inputCpfNumeros;
+            });
 
             if (dfProf.length === 0) {
-                alert("Profissional não encontrado na base de dados carregada.");
+                alert("CPF não encontrado na base de dados carregada.");
                 return;
             }
 
-            // Descobrir o Ano e Gênero
+            // O nome agora é extraído do primeiro registo encontrado para alimentar a função de género
+            const nomeDoServidor = dfProf[0]['NOME_PROF'] || "Servidor(a) não identificado";
+            
             const anoBase = Array.from(totalCompetencias)[0].substring(0, 4);
-            const genero = getGenero(input);
+            const genero = getGenero(nomeDoServidor);
             const textoServidor = genero === 'F' ? "da servidora" : "do servidor";
             
             document.getElementById('tituloSituacao').textContent = `Situação ${textoServidor} no CNES nas competências de ${anoBase}`;
             
-            document.getElementById('lblNome').textContent = dfProf[0]['NOME_PROF'] || "-";
-            document.getElementById('lblCPF').textContent = String(dfProf[0]['CPF_PROF'] || "-").trim();
+            // Preenchimento dos cartões informativos
+            document.getElementById('lblNome').textContent = nomeDoServidor;
+            
+            // Pega o CPF direto da base (mantendo zero à esquerda se houver)
+            document.getElementById('lblCPF').textContent = String(dfProf[0]['CPF_PROF'] || inputCpfNumeros).trim();
             document.getElementById('lblCBO').textContent = String(dfProf[0]['COD_CBO'] || "-").trim();
 
+            // Lógica para apresentar a Data de Desligamento, se existir
+            const dtDesligamento = dfProf[0]['DT_DESLIGAMENTO'] || dfProf[0]['DATA_DESLIGAMENTO'] || "";
+            const boxDesligamento = document.getElementById('boxDesligamento');
+            
+            if (String(dtDesligamento).trim() !== "") {
+                document.getElementById('lblDesligamento').textContent = dtDesligamento;
+                boxDesligamento.style.display = 'flex'; // Torna a div visível
+            } else {
+                boxDesligamento.style.display = 'none'; // Mantém oculta se não tiver dado
+            }
+
+            // Ordena a tabela por competência cronológica
             dfProf.sort((a, b) => String(a.CMPT_CNES).localeCompare(String(b.CMPT_CNES)));
             
             const colunas = ['CMPT_CNES', 'DISTRITO', 'CNES', 'EAS', 'DESCRICAO', 'COD_CBO', 'INE', 'EQUIPE', 'TIPO'];
@@ -418,13 +485,11 @@
             btnPdf.style.display = 'inline-block';
         }
 
-        // Funcionalidade de Baixar em PDF otimizada
         document.getElementById('btnPdf').addEventListener('click', function() {
             const element = document.getElementById('printArea');
             const nomeProf = document.getElementById('lblNome').textContent.replace(/\s+/g, '_');
             const tableDiv = document.getElementById('tableContainer');
             
-            // Remove momentaneamente o overflow da tabela para que o html2canvas capture tudo
             if (tableDiv) tableDiv.style.overflowX = 'visible';
             
             const opt = {
@@ -434,17 +499,16 @@
                 html2canvas:  { 
                     scale: 2, 
                     scrollY: 0, 
-                    windowWidth: document.documentElement.offsetWidth, // Ajuda na captura
+                    windowWidth: document.documentElement.offsetWidth,
                     useCORS: true 
                 },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' } // Retornado para Landscape (Horizontal)
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' } 
             };
             
             html2pdf().set(opt).from(element).save().then(() => {
-                if (tableDiv) tableDiv.style.overflowX = 'auto'; // Repõe o estilo após gerar
+                if (tableDiv) tableDiv.style.overflowX = 'auto'; 
             });
         });
-        </script>
+    </script>
 </body>
 </html>
-
