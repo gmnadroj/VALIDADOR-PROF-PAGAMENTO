@@ -300,6 +300,9 @@
         let globalData = [];
         let totalCompetencias = new Set();
 
+        // Limpa o ficheiro guardado na memória do navegador ao atualizar a página
+        document.getElementById('fileInput').value = "";
+
         document.getElementById('fileInput').addEventListener('change', handleFile);
         document.getElementById('btnSearch').addEventListener('click', searchProfessional);
         document.getElementById('searchInput').addEventListener('keypress', function(e) {
@@ -434,13 +437,10 @@
                     windowWidth: document.documentElement.offsetWidth, // Ajuda na captura
                     useCORS: true 
                 },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' } 
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' } // Retornado para Landscape (Horizontal)
             };
             
             html2pdf().set(opt).from(element).save().then(() => {
                 if (tableDiv) tableDiv.style.overflowX = 'auto'; // Repõe o estilo após gerar
             });
         });
-    </script>
-</body>
-</html>
